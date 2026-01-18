@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EDO lineal homogénea (coeficientes constantes) – Demo</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Nueva paleta solicitada */
+    :root{
+      --grad-logo-start: #60a5fa; /* blue-400 */
+      --grad-logo-mid:   #2dd4bf; /* cyan-400 / teal-ish */
+      --grad-logo-end:   #14b8a6; /* teal-400 */
+      --bg-slate-950: #020617; /* muy oscuro */
+      --panel: #071028;          /* color de las tarjetas */
+      --panel-darker: #050b1a;   /* <-- un poco más oscuro que --panel */
+      --text-light: #E6F0FF;
+      --muted: #94a3b8;
+      --purple-start: #7c3aed; /* purple-500 */
+      --purple-end:   #6d28d9; /* purple-600 */
+      --green-start:  #10b981; /* green-500 */
+      --green-end:    #059669; /* green-600 */
+    }
+
+    /* Fondo general */
+    body {
+      background: linear-gradient(135deg, #0a0e27 0%, #0f1a3c 25%, #0a0e27 50%, #050b1a 100%);
+      background-attachment: fixed;
+      color: var(--text-light);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      transition: background-color 360ms ease;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    /* Mejoradas animaciones suaves para acordeones */
+    .acc-content {
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height 400ms cubic-bezier(0.4, 0, 0.2, 1), opacity 300ms ease, padding 400ms ease, background 400ms ease;
+    }
+
+    .acc-open {
+      max-height: 1000px;
+      opacity: 1;
+    }
+
+    /* Agregar cambio de color cuando se abre cada acordeón */
+    #char.acc-open {
+      background: linear-gradient(135deg, rgba(7, 16, 40, 0.95), rgba(5, 11, 26, 0.98)) !important;
+    }
+
+    #roots.acc-open {
+      background: linear-gradient(135deg, rgba(7, 16, 40, 0.95), rgba(5, 11, 26, 0.98)) !important;
+    }
+
+    #solution.acc-open {
+      background: linear-gradient(135deg, rgba(7, 16, 40, 0.95), rgba(5, 11, 26, 0.98)) !important;
+    }
+
+    .chev {
+      transition: transform 400ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .chev-rot {
+      transform: rotate(180deg);
+    }
+
+    /* Paneles / tarjetas - mejorado */
+    .bg-white { 
+      background: linear-gradient(135deg, rgba(7, 16, 40, 0.95), rgba(5, 11, 26, 0.98)) !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+
+    .bg-slate-50 { 
+      background: linear-gradient(135deg, rgba(5, 11, 26, 0.9), rgba(2, 8, 23, 0.95)) !important;
+      border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    }
+
+    .bg-slate-50\/50 { 
+      background-color: rgba(5, 11, 26, 0.6) !important;
+    }
+
+    .border-slate-100 { 
+      border-color: rgba(255,255,255,0.08) !important; 
+    }
+
+    .text-slate-800 { 
+      color: var(--text-light) !important; 
+    }
+
+    .text-slate-500 { 
+      color: var(--muted) !important; 
+    }
+
+    .text-slate-600 { 
+      color: #cbd5e1 !important; 
+    }
+
+    .text-slate-400 { 
+      color: #94a3b8 !important; 
+    }
+
+    /* Inputs mejorados */
+    input#coeffs {
+      background: linear-gradient(135deg, rgba(5, 11, 26, 0.8), rgba(2, 8, 23, 0.9)) !important;
+      border: 1.5px solid rgba(96, 165, 250, 0.2) !important;
+      color: var(--text-light) !important;
+      transition: all 300ms ease !important;
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    input#coeffs:focus {
+      border-color: rgba(96, 165, 250, 0.6) !important;
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(96, 165, 250, 0.2) !important;
+      background: linear-gradient(135deg, rgba(5, 11, 26, 0.9), rgba(2, 8, 23, 0.95)) !important;
+    }
+
+    /* Code / badge */
+    .bg-slate-100 { 
+      background: linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(45, 212, 191, 0.1)) !important;
+      color: #a5f3fc !important;
+      border-radius: 6px;
+      padding: 0 8px;
+      border: 1px solid rgba(96, 165, 250, 0.2);
+      font-weight: 600;
+      font-family: "Monaco", "Courier New", monospace;
+    }
+
+    /* Chips / salida */
+    .chip {
+      background: linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(45, 212, 191, 0.08));
+      border: 1.5px solid rgba(96, 165, 250, 0.3);
+      color: #e0f2fe;
+      border-radius: 12px;
+      padding: 8px 14px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(96, 165, 250, 0.1);
+      transition: all 300ms ease;
+    }
+
+    .chip:hover {
+      background: linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(45, 212, 191, 0.12));
+      border-color: rgba(96, 165, 250, 0.5);
+      box-shadow: 0 6px 20px rgba(96, 165, 250, 0.2);
+      transform: translateY(-2px);
+    }
+
+    /* Accordeon toggle */
+    .acc-toggle { 
+      background: linear-gradient(135deg, rgba(96, 165, 250, 0.04), rgba(45, 212, 191, 0.02));
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 300ms ease;
+    }
+
+    .acc-toggle:hover {
+      background: linear-gradient(135deg, rgba(96, 165, 250, 0.08), rgba(45, 212, 191, 0.05));
+    }
+
+    .acc-toggle:focus {
+      outline: none;
+      background: linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(45, 212, 191, 0.08));
+    }
+
+    .chev path { 
+      stroke: var(--grad-logo-end);
+      transition: stroke 300ms ease;
+    }
+
+    /* Main area mejorada */
+    .main-area {
+      background: linear-gradient(135deg, rgba(5, 11, 26, 0.7), rgba(7, 16, 40, 0.6));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      box-shadow: 0 25px 60px rgba(2, 8, 23, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+      padding: 32px;
+      transition: all 360ms cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(20px);
+    }
+
+    .main-area:hover { 
+      transform: translateY(-8px);
+      box-shadow: 0 35px 80px rgba(96, 165, 250, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.08);
+      border-color: rgba(96, 165, 250, 0.15);
+    }
+
+    /* Header mejorado */
+    header {
+      background: linear-gradient(135deg, rgba(7, 16, 40, 0.8), rgba(5, 11, 26, 0.9)) !important;
+      border: 1.5px solid rgba(96, 165, 250, 0.2) !important;
+      box-shadow: 0 8px 32px rgba(96, 165, 250, 0.1) !important;
+      backdrop-filter: blur(10px) !important;
+    }
+
+    /* Quitar el margen superior (my-6) del header y mejorarlo */
+    header.bg-white {
+      margin-top: 0 !important;
+      margin-bottom: 20px !important;
+    }
+
+    /* Header / título junto al logo: siempre en fila (row) */
+	.app-header {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 18px;
+		padding: 12px 16px;
+		/* mantener el aspecto previo: permitimos que el contenido se envuelva en pantallas muy pequeñas */
+		flex-wrap: wrap;
+		text-align: left;
+	}
+	/* contenedor interno que agrupa logo + texto, ahora en fila siempre */
+	.app-title-wrap {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	/* asegurar que el bloque de texto no rompa el layout en móviles */
+	.app-title-wrap > div:last-child {
+		min-width: 0;
+	}
+
+	.app-title {
+		/* ...existing styling... */
+		white-space: nowrap; /* evita salto debajo del logo */
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+    .app-title {
+      font-size: 28px;
+      font-weight: 700;
+      /* Título más llamativo con más contraste y brillo */
+      background: linear-gradient(135deg, #60a5fa 0%, #2dd4bf 50%, #14b8a6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+      text-shadow: 0 0 30px rgba(96, 165, 250, 0.3);
+      filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.2));
+    }
+
+    .app-subtitle {
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* Footer mejorado */
+    footer {
+      background: linear-gradient(135deg, rgba(5, 11, 26, 0.8), rgba(2, 8, 23, 0.9));
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 20px;
+      color: #94a3b8 !important;
+      font-size: 13px;
+      letter-spacing: 0.3px;
+    }
+
+    /* Reemplazado footer: tarjeta compacta con autores y copyright */
+    footer {
+      margin-top: 2.5rem;
+      text-align: center;
+      padding-top: 2rem;
+      padding-bottom: 2rem;
+    }
+
+    footer .max-w-3xl {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    footer .bg-slate-50 {
+      background: rgba(5, 11, 26, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    footer ul {
+      margin-top: 0.25rem;
+      margin-bottom: 0.25rem;
+      padding-left: 0;
+      list-style-type: none;
+    }
+
+    footer li {
+      color: #e0f2fe;
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+    }
+
+    footer .tracking-wide {
+      letter-spacing: 0.05em;
+    }
+
+    footer .text-slate-400 {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    footer .text-slate-500 {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Scrollbar personalizada */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(96, 165, 250, 0.4);
+      border-radius: 4px;
+      transition: background 300ms ease;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(96, 165, 250, 0.7);
+    }
+
+    /* Responsive improvements */
+    @media (max-width: 768px) {
+      .main-area {
+        padding: 20px;
+      }
+
+      .app-title {
+        font-size: 24px;
+      }
+
+      header {
+        margin: 0 12px 12px 12px !important;
+        border-radius: 16px;
+      }
+
+      .acc-toggle {
+        padding: 12px 16px !important;
+      }
+    }
+
+    /* Logo ESCOM (derecha del header) */
+    .escom-logo { display: none; align-items: center; justify-content: center; margin-left: 12px; }
+    .escom-logo img {
+      width: 64px;       /* tamaño por defecto en pantallas medianas */
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 8px 20px rgba(2,8,23,0.5);
+      object-fit: contain;
+      display: block;
+    }
+    @media (min-width: 768px) {
+      .escom-logo { display: inline-flex; }
+    }
+    @media (max-width: 640px) {
+      .escom-logo img { width: 44px; }
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-800 antialiased">
+    <!-- Reemplazado header (ahora con mismo color/borde que las tarjetas) -->
+    <header class="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm my-6">
+      <div class="container mx-auto px-4 app-header">
+        <div class="app-title-wrap">
+          <div class="logo" aria-hidden="true" title="EDO" style="width:64px;height:64px;border-radius:12px;display:inline-grid;place-items:center;">
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="logo EDO">
+              <defs>
+                <linearGradient id="lg" x1="0" x2="1" y1="0" y2="1">
+                  <stop offset="0" stop-color="var(--grad-logo-start)"/>
+                  <stop offset="0.5" stop-color="var(--grad-logo-mid)"/>
+                  <stop offset="1" stop-color="var(--grad-logo-end)"/>
+                </linearGradient>
+              </defs>
+              <rect rx="12" ry="12" width="64" height="64" fill="url(#lg)" opacity="0.08"/>
+              <text x="50%" y="54%" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="34" fill="url(#lg)" dominant-baseline="middle">∫</text>
+            </svg>
+          </div>
+
+          <div>
+            <h1 class="app-title text-slate-800">EDO Lineal Homogénea</h1>
+            <div class="app-subtitle text-slate-500">CON COEFICIENTES CONSTANTES</div>
+          </div>
+        </div>
+
+        <!-- Logo ESCOM: archivo local "logoESCOM2n.png" (visible en md+) -->
+        <div class="escom-logo" aria-hidden="false" title="ESCOM - IPN">
+          <img src="./logoESCOM2x.png" alt="Logo ESCOM IPN" />
+        </div>
+      </div>
+    </header>
+
+  <!-- Reemplazado: main centrado con contenedor limitado y padding amplio -->
+  <main class="flex justify-center py-4 px-4">
+    <div class="main-area w-full max-w-4xl">
+      <div class="grid grid-cols-1 gap-6">
+        <!-- UNIFICADO: Input arriba y Resultados debajo, en columna -->
+        <section class="bg-white border border-slate-100 rounded-2xl p-10 shadow-sm">
+          <div class="flex flex-col gap-6">
+            <!-- Inputs (arriba) -->
+            <div>
+              <p class="text-slate-500 mb-3 text-sm">Ingresa los coeficientes <strong>de mayor a menor grado</strong> (incluye ceros). Ej.: <code class="bg-slate-100 px-2 py-0.5 rounded">1, -3, 2</code></p>
+              <label for="coeffs" class="block text-sm text-slate-600 mb-2 font-semibold">Coeficientes a<sub>n</sub>, a<sub>n-1</sub>, …, a<sub>0</sub></label>
+              <input id="coeffs" type="text" placeholder="Ej.: 1, -3, 2" class="w-full rounded-lg px-4 py-3 bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-300 text-slate-800 transition-all duration-300" />
+              <p class="text-xs text-slate-400 mt-2">Ecuación: a<sub>n</sub> y^(n) + … + a<sub>0</sub> y = 0</p>
+              <p class="text-sm text-slate-500 mt-4 leading-relaxed">Para ver resultados, abre la pestaña deseada: Ecuación característica, Raíces o Solución general.</p>
+            </div>
+
+            <!-- Resultados (debajo, una columna) -->
+            <div class="flex flex-col gap-4">
+              <!-- Card: Ecuación característica -->
+              <div class="bg-white border border-slate-100 rounded-2xl p-0 overflow-hidden shadow-sm transition-all duration-300 hover:shadow-lg hover:border-slate-200">
+                <button data-target="char" class="w-full flex items-center justify-between px-5 py-4 acc-toggle focus:outline-none">
+                  <div class="flex items-center gap-3">
+                    <div>
+                      <h3 class="text-md font-semibold text-slate-800">Ecuación característica</h3>
+                      <p class="text-xs text-slate-500 mt-0.5">Polinomio asociado</p>
+                    </div>
+                    <span class="badge badge-char" aria-hidden="true"></span>
+                  </div>
+                  <svg class="chev h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <div id="char" class="acc-content px-5 pb-4 bg-white">
+                  <div id="charpoly" class="out text-slate-700 py-3">—</div>
+                </div>
+              </div>
+
+              <!-- Card: Raíces -->
+              <div class="bg-white border border-slate-100 rounded-2xl p-0 overflow-hidden shadow-sm transition-all duration-300 hover:shadow-lg hover:border-slate-200">
+                <button data-target="roots" class="w-full flex items-center justify-between px-5 py-4 acc-toggle focus:outline-none">
+                  <div class="flex items-center gap-3">
+                    <div>
+                      <h3 class="text-md font-semibold text-slate-800">Raíces</h3>
+                      <p class="text-xs text-slate-500 mt-0.5">Valores y multiplicidades</p>
+                    </div>
+                    <span class="badge badge-roots" aria-hidden="true"></span>
+                  </div>
+                  <svg class="chev h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <div id="roots" class="acc-content px-5 pb-4 bg-white">
+                  <div class="out text-slate-700 py-3">—</div>
+                </div>
+              </div>
+
+              <!-- Card: Solución general -->
+              <div class="bg-white border border-slate-100 rounded-2xl p-0 overflow-hidden shadow-sm transition-all duration-300 hover:shadow-lg hover:border-slate-200">
+                <button data-target="solution" class="w-full flex items-center justify-between px-5 py-4 acc-toggle focus:outline-none">
+                  <div class="flex items-center gap-3">
+                    <div>
+                      <h3 class="text-md font-semibold text-slate-800">Solución general</h3>
+                      <p class="text-xs text-slate-500 mt-0.5">Forma según multiplicidades</p>
+                    </div>
+                    <span class="badge badge-solution" aria-hidden="true"></span>
+                  </div>
+                  <svg class="chev h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <div id="solution" class="acc-content px-5 pb-4 bg-white">
+                  <div class="out text-slate-700 py-3">—</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- área opcional para resultados extendidos -->
+            <div id="resultsExpanded" class="mt-2"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- Reemplazado footer: tarjeta compacta con autores y copyright -->
+  <footer class="mt-10 text-center py-8">
+    <div class="max-w-3xl mx-auto">
+      <div class="bg-slate-50 border border-slate-100 rounded-xl p-5 shadow-sm">
+        <ul class="mt-1 space-y-1 text-sm text-slate-100">
+          <li>Luis Enrique Cruz Estrella</li>
+          <li>Pamela Herrera Pérez</li>
+          <li>Profesor: Jorge Javier Silva Martínez</li>
+        </ul>
+
+        <div class="mt-4 text-xs text-slate-400 uppercase tracking-wide">
+          Escuela Superior de Cómputo — Instituto Politécnico Nacional (IPN)
+        </div>
+      </div>
+
+      <div class="mt-4 flex items-center justify-center gap-3 text-xs text-slate-500">
+        <span>© <span id="year"></span> ESCOM — IPN. Todos los derechos reservados.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Manejo de acordeones: al presionar toggles se abre/cierran, rota la flecha y ejecuta el cálculo al abrir.
+    (function(){
+      const toggles = document.querySelectorAll('.acc-toggle');
+      toggles.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.target;
+          const content = document.getElementById(id);
+          const chev = btn.querySelector('.chev');
+          const isOpen = content.classList.contains('acc-open');
+
+          // cerrar todas
+          document.querySelectorAll('.acc-content.acc-open').forEach(c => {
+            if (c.id !== id) {
+              c.classList.remove('acc-open');
+              const header = document.querySelector(`button[data-target="${c.id}"]`);
+              header?.querySelector('.chev')?.classList.remove('chev-rot');
+            }
+          });
+
+          // toggle actual
+          if (isOpen) {
+            content.classList.remove('acc-open');
+            chev.classList.remove('chev-rot');
+          } else {
+            content.classList.add('acc-open');
+            chev.classList.add('chev-rot');
+            // ejecutar cálculo
+            try {
+              if (id === 'char' && typeof mostrarChar === 'function') mostrarChar();
+              if (id === 'roots' && typeof calcularRaices === 'function') calcularRaices();
+              if (id === 'solution' && typeof mostrarSolucion === 'function') mostrarSolucion();
+            } catch(e) { console.warn(e); }
+          }
+        });
+      });
+    })();
+
+    // año dinámico para el footer
+    (function(){ const y = new Date().getFullYear(); const e = document.getElementById('year'); if(e) e.textContent = y; })();
+  </script>
+
+  <!-- logica.js define mostrarChar(), calcularRaices(), mostrarSolucion() -->
+  <script src="./logica.js"></script>
+</body>
+</html>
